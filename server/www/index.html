@@ -1,0 +1,79 @@
+<!doctype html>
+<html>
+<head>
+<title>term.js</title>
+<!--
+  term.js
+  Copyright (c) 2012-2013, Christopher Jeffrey (MIT License)
+-->
+<style>
+  html {
+    background: #555;
+  }
+
+  h1 {
+    margin-bottom: 20px;
+    font: 20px/1.5 sans-serif;
+  }
+
+/*
+  .terminal {
+    float: left;
+    border: #000 solid 5px;
+    font-family: "DejaVu Sans Mono", "Liberation Mono", monospace;
+    font-size: 11px;
+    color: #f0f0f0;
+    background: #000;
+  }
+
+  .terminal-cursor {
+    color: #000;
+    background: #f0f0f0;
+  }
+*/
+</style>
+</head><body>
+<h1>term.js</h1>
+<div id="term" ></div>
+<script src="//cdnjs.cloudflare.com/ajax/libs/jquery/2.1.1/jquery.min.js" ></script>
+<script src="/socket.io/socket.io.js"></script>
+<script src="term.js"></script>
+<script>
+ var socket = null;
+(function() {
+    socket = io();
+  window.onload = function() {
+   
+    socket.on('connect', function() {
+      var term = new Terminal({
+        cols: 120,
+        rows: 30,
+        useStyle: true,
+        screenKeys: true,
+        cursorBlink: false
+      });
+
+      term.on('data', function(localhostdata) {
+        socket.emit('localhostdata', localhostdata);
+      });
+
+      term.on('title', function(title) {
+        document.title = title;
+      });
+
+      term.open(document.getElementById('term'));
+
+      term.write('\x1b[31mWelcome to term.js!\x1b[m\r\n');
+
+      socket.on('localhostdata', function(data) {
+        term.write(data);
+      });
+
+      socket.on('disconnect', function() {
+        term.destroy();
+      });
+    });
+  };
+}).call(this);
+</script>
+</body></html>
